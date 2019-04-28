@@ -80,5 +80,17 @@ $route['api/v1/settings/(:any)']['delete'] = 'api/v1/settings/delete/$1';
 
 $route['api/v1/availabilities']['get'] = 'api/v1/availabilities/get';
 
+// Duplico la api para mantener las personalizaciones separadas del la api original
+foreach ($resources as $resource)
+{
+    $route['api/custom/' . $resource]['post'] = 'api/custom/' . $resource . '/post';
+    $route['api/custom/' . $resource . '/(:num)']['put'] = 'api/custom/' . $resource . '/put/$1';
+    $route['api/custom/' . $resource . '/(:num)']['delete'] = 'api/custom/' . $resource . '/delete/$1';
+    $route['api/custom/' . $resource]['get'] = 'api/custom/' . $resource . '/get';
+    $route['api/custom/' . $resource . '/(:num)']['get'] = 'api/custom/' . $resource . '/get/$1';
+}
+
+$route['api/custom/availabilities']['get'] = 'api/custom/availabilities/get';
+
 /* End of file routes.php */
 /* Location: ./application/config/routes.php */
