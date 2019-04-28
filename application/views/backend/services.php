@@ -107,6 +107,11 @@
                     </div>
 
                     <div class="form-group">
+                        <label for="service-priceb"><?= lang('price') ?> B *</label>
+                        <input id="service-priceb" class="form-control required">
+                    </div>
+
+                    <div class="form-group">
                         <label for="service-currency"><?= lang('currency') ?></label>
                         <input id="service-currency" class="form-control" maxlength="32">
                     </div>

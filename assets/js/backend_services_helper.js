@@ -119,6 +119,7 @@
                 name: $('#service-name').val(),
                 duration: $('#service-duration').val(),
                 price: $('#service-price').val(),
+                priceb: $('#service-priceb').val(),
                 currency: $('#service-currency').val(),
                 description: $('#service-description').val(),
                 availabilities_type: $('#service-availabilities-type').val(),
@@ -286,6 +287,7 @@
         $('#service-name').val(service.name);
         $('#service-duration').val(service.duration);
         $('#service-price').val(service.price);
+        $('#service-priceb').val(service.priceb);
         $('#service-currency').val(service.currency);
         $('#service-description').val(service.description);
         $('#service-availabilities-type').val(service.availabilities_type);

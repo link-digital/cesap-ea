@@ -31,6 +31,7 @@ class Services implements ParsersInterface {
             'name' => $response['name'],
             'duration' => (int)$response['duration'],
             'price' => (float)$response['price'],
+            'priceb' => (float)$response['priceb'],
             'currency' => $response['currency'],
             'description' => $response['description'],
             'availabilitiesType' => $response['availabilities_type'],
