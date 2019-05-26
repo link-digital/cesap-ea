@@ -1,5 +1,5 @@
 storage/*
-config.php
+/config.php
 
 # Logs and databases #
 ######################
