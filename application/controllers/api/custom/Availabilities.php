@@ -43,6 +43,15 @@ class Availabilities extends API_V1_Controller {
             $categoryId = new UnsignedInteger($this->input->get('categoryId'));
         }
 
+        if ($this->input->get('date'))
+        {
+            $date = new DateTime($this->input->get('date'));
+        }
+        else
+        {
+            $date = new DateTime();
+        }
+
         $providerId = new UnsignedInteger($this->input->get('providerId'));
 
         if($cid)
@@ -54,12 +63,20 @@ class Availabilities extends API_V1_Controller {
             $this->load->model('services_model');
 
             $availabilities = array();
+            $working_plan = array();
 
             foreach($services as $s)
             {
                 $serviceId = new UnsignedInteger($s['id']);
-                $cat_availabilities = $this->_get($serviceId, $providerId);
+
+                // We call availabilites for old date to get all working plan
+                $old_date = new DateTime('1980-09-29');
+                $cat_availabilities = $this->_get($serviceId, $providerId, $old_date);
+                $working_plan = array_merge($working_plan, $cat_availabilities);
+
                 $availabilities['services'][$s['id']] = $s;
+
+                $cat_availabilities = $this->_get($serviceId, $providerId, $date);
 
                 
                 foreach($cat_availabilities as $t)
@@ -68,16 +85,35 @@ class Availabilities extends API_V1_Controller {
                 }
                 
             }
-                    
+
+            $working_plan = array_unique($working_plan);
+
             ksort($times);
 
-            foreach($times as $k => $v)
+            foreach($working_plan as $v)
             {
-                $availabilities['availabilities'][] = array(
-                    'time' => $k,
-                    'services' => $v,
-                );
+                if(isset($times[$v]))
+                {
+                    $availabilities['availabilities'][] = array(
+                        'time' => $v,
+                        'services' => $times[$v],
+                    );
+                }
+                else
+                {
+                    $availabilities['availabilities'][] = array(
+                        'time' => $v,
+                        'services' => array(),
+                    );
+                }
             }
+            // foreach($times as $k => $v)
+            // {
+            //     $availabilities['availabilities'][] = array(
+            //         'time' => $k,
+            //         'services' => $v,
+            //     );
+            // }
 
           $this->output
               ->set_content_type('application/json')
@@ -86,7 +122,7 @@ class Availabilities extends API_V1_Controller {
         else
         {
             $serviceId = new UnsignedInteger($this->input->get('serviceId'));
-            $availabilities = $this->_get($serviceId, $providerId);
+            $availabilities = $this->_get($serviceId, $providerId, $date);
 
           $this->output
               ->set_content_type('application/json')
@@ -95,35 +131,16 @@ class Availabilities extends API_V1_Controller {
         }
     }
 
-    /**
-     * GET API Method
-     *
-     * Provide the "providerId", "serviceId" and "date" GET parameters to get the availabilities for a specific date.
-     * If no "date" was provided then the current date will be used.
-     */
-    private function _get($serviceId, $providerId)
-//     public function get()
+
+    private function _get($serviceId, $providerId, $date)
     {
         try
         {
 
-            // $providerId = new UnsignedInteger($this->input->get('providerId'));
-            // $serviceId = new UnsignedInteger($this->input->get('serviceId'));
-
-
-            if ($this->input->get('date'))
-            {
-                $date = new DateTime($this->input->get('date'));
-            }
-            else
-            {
-                $date = new DateTime();
-            }
-
             $provider = $this->providers_model->get_row($providerId->get());
             $service = $this->services_model->get_row($serviceId->get());
 
-            $emptyPeriods = $this->_getProviderAvailableTimePeriods($providerId->get(),
+            $emptyPeriods = $this->_getProviderAvailableTimePeriods($providerId->get(), $serviceId->get(),
                 $date->format('Y-m-d'), []);
 
             $availableHours = $this->_calculateAvailableHours($emptyPeriods,
@@ -182,6 +199,7 @@ class Availabilities extends API_V1_Controller {
      */
     protected function _getProviderAvailableTimePeriods(
         $provider_id,
+        $service_id,
         $selected_date,
         $exclude_appointments = []
     ) {
@@ -192,7 +210,8 @@ class Availabilities extends API_V1_Controller {
         $working_plan = json_decode($this->providers_model->get_setting('working_plan', $provider_id), TRUE);
 
         $where_clause = [
-            'id_users_provider' => $provider_id
+            'id_services' => $service_id
+            // 'id_users_provider' => $provider_id
         ];
 
         $reserved_appointments = $this->appointments_model->get_batch($where_clause);
